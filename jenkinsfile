@@ -2,46 +2,41 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "myapp:${env.BUILD_ID}"
-        REGISTRY = "dockerhub_username/myapp"
+        DOCKER_IMAGE = "mohamedabdelsattar12/ivolv-app:${env.BUILD_ID}"
+        DOCKERHUB_USER = "mohamedabdelsattar12"
+        DOCKERHUB_PASS = "DOCKER_HUB_TOKEN"
+        K8S_MANIFEST_PATH = "FinalProject/k8s/"
     }
 
     stages {
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE .'
+                sh "docker build -t $DOCKER_IMAGE FinalProject/"
             }
         }
 
-        stage('Scan Image') {
+        stage('Push Docker Image') {
             steps {
-                echo "Scanning image $DOCKER_IMAGE"
-                // ممكن تضيف أداة scan هنا لو حابب
-            }
-        }
-
-        stage('Push Image') {
-            steps {
-                sh 'docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS'
-                sh 'docker push $DOCKER_IMAGE'
+                sh "docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS"
+                sh "docker push $DOCKER_IMAGE"
             }
         }
 
         stage('Delete Local Image') {
             steps {
-                sh 'docker rmi $DOCKER_IMAGE'
+                sh "docker rmi $DOCKER_IMAGE"
             }
         }
 
         stage('Update Manifests') {
             steps {
-                sh 'sed -i "s|image:.*|image:$DOCKER_IMAGE|" k8s/deployment.yaml'
+                sh "sed -i 's|image:.*|image:$DOCKER_IMAGE|' ${K8S_MANIFEST_PATH}deployment.yaml"
             }
         }
 
         stage('Deploy to Cluster') {
             steps {
-                sh 'kubectl apply -f k8s/'
+                sh "kubectl apply -f $K8S_MANIFEST_PATH"
             }
         }
     }
