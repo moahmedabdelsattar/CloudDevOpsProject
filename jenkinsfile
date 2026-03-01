@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "myapp:${env.BUILD_ID}"
+        REGISTRY = "dockerhub_username/myapp"
+    }
+
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $DOCKER_IMAGE .'
+            }
+        }
+
+        stage('Scan Image') {
+            steps {
+                echo "Scanning image $DOCKER_IMAGE"
+                // ممكن تضيف أداة scan هنا لو حابب
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                sh 'docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS'
+                sh 'docker push $DOCKER_IMAGE'
+            }
+        }
+
+        stage('Delete Local Image') {
+            steps {
+                sh 'docker rmi $DOCKER_IMAGE'
+            }
+        }
+
+        stage('Update Manifests') {
+            steps {
+                sh 'sed -i "s|image:.*|image:$DOCKER_IMAGE|" k8s/deployment.yaml'
+            }
+        }
+
+        stage('Deploy to Cluster') {
+            steps {
+                sh 'kubectl apply -f k8s/'
+            }
+        }
+    }
+}
