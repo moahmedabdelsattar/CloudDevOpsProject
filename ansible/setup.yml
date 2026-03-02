@@ -7,7 +7,7 @@
     - name: Install Docker
       yum: name=docker state=present
     - name: Install Java
-      yum: name=java-11-openjdk state=present
+      yum: name=java-17-amazon-corretto state=present
     - name: Start Docker service
       service: name=docker state=started enabled=yes
     - name: Install Jenkins
