@@ -2,13 +2,48 @@
   hosts: jenkins
   become: yes
   tasks:
+
     - name: Install Git
-      yum: name=git state=present
+      yum:
+        name: git
+        state: present
+
     - name: Install Docker
-      yum: name=docker state=present
-    - name: Install Java
-      yum: name=java-17-amazon-corretto state=present
+      yum:
+        name: docker
+        state: present
+
+    - name: Install Java 17
+      yum:
+        name: java-17-amazon-corretto
+        state: present
+
     - name: Start Docker service
-      service: name=docker state=started enabled=yes
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add Jenkins repo
+      get_url:
+        url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+        dest: /etc/yum.repos.d/jenkins.repo
+
+    - name: Import Jenkins key
+      rpm_key:
+        state: present
+        key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+
+    - name: Update yum cache
+      command: yum makecache
+
     - name: Install Jenkins
-      yum: name=jenkins state=present
+      yum:
+        name: jenkins
+        state: present
+
+    - name: Start and enable Jenkins
+      service:
+        name: jenkins
+        state: started
+        enabled: yes
