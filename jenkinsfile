@@ -2,13 +2,12 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "mohamedabdelsattar12/ivolv-app:${env.BUILD_ID}"
-        DOCKERHUB_USER = "mohamedabdelsattar12"
-        DOCKERHUB_PASS = "DOCKER_HUB_TOKEN"
+        DOCKER_IMAGE = "mohamedabdelsattar12/ivolv-app:${BUILD_NUMBER}"
         K8S_MANIFEST_PATH = "FinalProject/k8s/"
     }
 
     stages {
+
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t $DOCKER_IMAGE FinalProject/"
@@ -17,20 +16,30 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                sh "docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS"
-                sh "docker push $DOCKER_IMAGE"
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    docker push $DOCKER_IMAGE
+                    '''
+                }
             }
         }
 
         stage('Delete Local Image') {
             steps {
-                sh "docker rmi $DOCKER_IMAGE"
+                sh "docker rmi $DOCKER_IMAGE || true"
             }
         }
 
         stage('Update Manifests') {
             steps {
-                sh "sed -i 's|image:.*|image:$DOCKER_IMAGE|' ${K8S_MANIFEST_PATH}deployment.yaml"
+                sh """
+                sed -i 's|image:.*|image: $DOCKER_IMAGE|' ${K8S_MANIFEST_PATH}deployment.yaml
+                """
             }
         }
 
