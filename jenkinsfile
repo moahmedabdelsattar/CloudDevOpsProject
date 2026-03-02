@@ -38,7 +38,7 @@ pipeline {
         stage('Update Manifests') {
             steps {
                 sh """
-                sed -i 's|image:.*|image: $DOCKER_IMAGE|' ${K8S_MANIFEST_PATH}deployment.yaml
+                sed -i 's|image:.*|image: $DOCKER_IMAGE|' ${K8S_MANIFEST_PATH}
                 """
             }
         }
