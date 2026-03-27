@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ivolv-app
+  namespace: argocd       # namespace اللي متثبت فيه ArgoCD
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/moahmedabdelsattar/CloudDevOpsProject.git'  # استبدل بالـ GitHub repo
+    targetRevision: HEAD       # أو branch زي main
+    path: deploy               # المسار في الريبو اللي فيه manifests (Deployment, Service)
+  destination:
+    server: 'https://kubernetes.default.svc'  # cluster الافتراضي
+    namespace: ivolv-app                      # namespace التطبيق
+  syncPolicy:
+    automated:
+      prune: true       # يحذف الموارد القديمة لو اتغيرت
+      selfHeal: true    # يصلح أي اختلاف بين الريبو والـ cluster

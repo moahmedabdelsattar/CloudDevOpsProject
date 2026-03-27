@@ -1,0 +1,33 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: ivolv-deploy
+  namespace: ivolv
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: myapp
+        image: mohamedabdelsattar12/ivolv-app
+        ports:
+        - containerPort: 5000
+
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-ivolv
+  namespace: ivolv
+spec:
+  selector:
+    app: myapp
+  ports:
+  - port: 80
+    targetPort: 5000
