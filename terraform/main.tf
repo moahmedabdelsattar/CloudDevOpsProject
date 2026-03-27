@@ -3,13 +3,13 @@ provider "aws" {
 }
 
 module "network" {
-  source = "./modules/network"
+  source = "./moduls/network"
 
   vpc_cidr = var.vpc_cidr
 }
 
 module "server" {
-  source = "./modules/server"
+  source = "./moduls/server"
 
   subnet_id = module.network.public_subnet_id
   vpc_id    = module.network.vpc_id
